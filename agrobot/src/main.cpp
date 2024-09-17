@@ -1,12 +1,12 @@
 #include "battery_pub.h"
 #include "range_pub.h"
 
-#include <Servo.h>
 #include <SoftwareSerial.h>
 #include <agrobot_interfaces/msg/drive_command.h>
 #include <agrobot_interfaces/msg/battery_status.h>
 #include <agrobot_interfaces/msg/range_data.h>
 
+#define ENABLE_DRIVE
 // #define ENABLE_BATTERY
 #define ENABLE_RANGE
 #define ENABLE_BT_DEBUG
@@ -85,6 +85,10 @@ void cmd_sub_callback(const void *msgin) {
 
   const agrobot_interfaces__msg__DriveCommand *msg =
       (const agrobot_interfaces__msg__DriveCommand *)msgin;
+
+#ifdef ENABLE_DRIVE
+  // TODO: write the motor values to the motors
+#endif
 
 #ifdef ENABLE_BT_DEBUG
   BTSerial.println(
@@ -167,6 +171,10 @@ void setup() {
   //   enable and disable each sensor
   //////////////////////////////////////////////////////////
 
+#ifdef ENABLE_DRIVE
+  // TODO: motor setup code goes here
+#endif
+
 #ifdef ENABLE_BT_DEBUG
   BTSerial.begin(BT_DEBUG_RATE);
 #endif
@@ -226,10 +234,13 @@ void loop() {
 
   // fail safe for agent disconnect
   if (millis() - last_received > 2000) {
+
+#ifdef ENABLE_DRIVE
     // TODO: write default values to the motors
+#endif
 
 #ifdef ENABLE_BT_DEBUG
-    BTSerial.println("ALERT: No command received in 3 seconds, shutting down");
+    BTSerial.println("ALERT: No command received in 2 seconds, shutting down");
 #endif
   }
 
