@@ -1,12 +1,12 @@
 //////////////////////////////////////////////////////////
-// agrobot/src/main.cpp
+// Node: micro_ros_platformio_node
 // Created by Nelson Durrant, Sep 2024
 //
 // PUBLISHERS:
-// - /battery_status, agrobot_interfaces/msg/BatteryStatus
-// - /range_data, agrobot_interfaces/msg/RangeData
+// - /battery_status (agrobot_interfaces/msg/BatteryStatus)
+// - /range_data (agrobot_interfaces/msg/RangeData)
 // SUBSCRIBERS:
-// - /drive_command, agrobot_interfaces/msg/DriveCommand
+// - /drive_command (agrobot_interfaces/msg/DriveCommand)
 //////////////////////////////////////////////////////////
 
 #include "battery_pub.h"

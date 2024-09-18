@@ -1,4 +1,5 @@
 #!/bin/bash
+# Created by Nelson Durrant, Sep 2024
 
 ##########################################################
 # BUILDS FIRMWARE.HEX FILES FOR PIO WORKSPACES
