@@ -1,3 +1,14 @@
+//////////////////////////////////////////////////////////
+// agrobot/src/main.cpp
+// Created by Nelson Durrant, Sep 2024
+//
+// PUBLISHERS:
+// - /battery_status, agrobot_interfaces/msg/BatteryStatus
+// - /range_data, agrobot_interfaces/msg/RangeData
+// SUBSCRIBERS:
+// - /drive_command, agrobot_interfaces/msg/DriveCommand
+//////////////////////////////////////////////////////////
+
 #include "battery_pub.h"
 #include "range_pub.h"
 
