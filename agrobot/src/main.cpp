@@ -2,8 +2,8 @@
 #include "range_pub.h"
 
 #include <SoftwareSerial.h>
-#include <agrobot_interfaces/msg/drive_command.h>
 #include <agrobot_interfaces/msg/battery_status.h>
+#include <agrobot_interfaces/msg/drive_command.h>
 #include <agrobot_interfaces/msg/range_data.h>
 
 #define ENABLE_DRIVE
@@ -75,6 +75,10 @@ enum states {
 void error_loop() {
   while (1) {
     delay(100);
+
+#ifdef ENABLE_BT_DEBUG
+    BTSerial.println("[ERROR] In error loop");
+#endif
   }
 }
 
@@ -91,9 +95,9 @@ void cmd_sub_callback(const void *msgin) {
 #endif
 
 #ifdef ENABLE_BT_DEBUG
-  BTSerial.println(
-      "FR: " + String(msg->fr_motor) + " FL: " + String(msg->fl_motor) +
-      " BR: " + String(msg->br_motor) + " BL: " + String(msg->bl_motor));
+  BTSerial.println("[ALERT] Received command: " + String(msg->fr_motor) + " " +
+                   String(msg->fl_motor) + " " + String(msg->br_motor) + " " +
+                   String(msg->bl_motor));
 #endif
 }
 
@@ -112,13 +116,13 @@ bool create_entities() {
   // functions
   RCCHECK(rmw_uros_sync_session(SYNC_TIMEOUT));
 
-  #ifdef ENABLE_BT_DEBUG
+#ifdef ENABLE_BT_DEBUG
   if (!rmw_uros_epoch_synchronized()) {
-    BTSerial.println("ERROR: Could not synchronize timestamps with agent");
+    BTSerial.println("[ERROR] Could not synchronize timestamps with agent");
   } else {
-    BTSerial.println("ALERT: Timestamps synchronized with agent");
+    BTSerial.println("[ALERT] Timestamps synchronized with agent");
   }
-  #endif
+#endif
 
   // create publishers
   battery_pub.setup(node);
@@ -135,9 +139,12 @@ bool create_entities() {
                                  &allocator));
 
   // add callbacks to executor
-  RCSOFTCHECK(
-      rclc_executor_add_subscription(&executor, &command_sub, &command_msg,
-                                     &cmd_sub_callback, ON_NEW_DATA));
+  RCSOFTCHECK(rclc_executor_add_subscription(
+      &executor, &command_sub, &command_msg, &cmd_sub_callback, ON_NEW_DATA));
+
+#ifdef ENABLE_BT_DEBUG
+  BTSerial.println("[ALERT] Micro-ROS entities created successfully");
+#endif
 
   return true;
 }
@@ -151,10 +158,22 @@ void destroy_entities() {
   range_pub.destroy(node);
 
   // destroy everything else
-  rcl_subscription_fini(&command_sub, &node);
+  if (rcl_subscription_fini(&command_sub, &node) != RCL_RET_OK) {
+#ifdef ENABLE_BT_DEBUG
+    BTSerial.println("[ERROR] Failed to destroy command_sub");
+#endif
+  }
   rclc_executor_fini(&executor);
-  rcl_node_fini(&node);
+  if (rcl_node_fini(&node) != RCL_RET_OK) {
+#ifdef ENABLE_BT_DEBUG
+    BTSerial.println("[ERROR] Failed to destroy node");
+#endif
+  }
   rclc_support_fini(&support);
+
+#ifdef ENABLE_BT_DEBUG
+  BTSerial.println("[ALERT] Micro-ROS entities destroyed successfully");
+#endif
 }
 
 void setup() {
@@ -171,21 +190,37 @@ void setup() {
   //   enable and disable each sensor
   //////////////////////////////////////////////////////////
 
-#ifdef ENABLE_DRIVE
-  // TODO: motor setup code goes here
-#endif
-
 #ifdef ENABLE_BT_DEBUG
   BTSerial.begin(BT_DEBUG_RATE);
+#endif
+
+#ifdef ENABLE_DRIVE
+  // TODO: motor setup code goes here
+
+#ifdef ENABLE_BT_DEBUG
+  BTSerial.println("[ALERT] Drive motors enabled");
+#endif
 #endif
 
 #ifdef ENABLE_BATTERY
   pinMode(CURRENT_PIN, INPUT);
   pinMode(VOLT_PIN, INPUT);
+
+#ifdef ENABLE_BT_DEBUG
+  BTSerial.println("[ALERT] Battery sensor enabled");
+#endif
 #endif
 
 #ifdef ENABLE_RANGE
   // TODO: range sensor setup code goes here
+
+#ifdef ENABLE_BT_DEBUG
+  BTSerial.println("[ALERT] Ultrasonics enabled");
+#endif
+#endif
+
+#ifdef ENABLE_BT_DEBUG
+  BTSerial.println("[ALERT] Sensor setup complete");
 #endif
 
   //////////////////////////////////////////////////////////
@@ -240,7 +275,7 @@ void loop() {
 #endif
 
 #ifdef ENABLE_BT_DEBUG
-    BTSerial.println("ALERT: No command received in 2 seconds, shutting down");
+    BTSerial.println("[ALERT] No command received in timeout, shutting down");
 #endif
   }
 
