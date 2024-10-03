@@ -286,7 +286,7 @@ void loop() {
 #endif
 
 #ifdef ENABLE_BT_DEBUG
-    BTSerial.println("[ALERT] No command received in timeout, shutting down");
+    BTSerial.println("[ALERT] No command received in timeout, stopping actuators");
 #endif
   }
 
